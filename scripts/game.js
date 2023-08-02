@@ -3,14 +3,16 @@ let playerTurn = 1;
 let gameStart = 0;
 let draggedItem = null;
 let checkDrop = false;
+let pickPiece = null;
 let GameBoard = {
   left: null,
   right: null,
   screenWidth: window.screen.availWidth - 320,
-  leftPos: [50, 390],
-  rightPos: [50, 510],
-  leftWrap: false,
-  rightWrap: false,
+  currentHeight: window.screen.availHeight,
+  leftPos: [50, 370],
+  rightPos: [50, 538],
+  leftWrap: 0,
+  rightWrap: 0,
   pieceHeight: 84,
   pieceWidth: 36,
   add: function (piece, dest, pos) {
@@ -23,16 +25,21 @@ let GameBoard = {
         this.rightPos[1] += this.pieceHeight;
       } else {
         if (this.rightWrap) {
-          piece.style.transform += "rotateZ(90deg)";
+          piece.style.transform = "rotateZ(0deg)";
           this.rightPos[0] += this.pieceHeight;
+          this.rightWrap += 1;
         } else {
           this.rightPos[0] += 2 * this.pieceWidth - 10;
           this.rightPos[1] += this.pieceWidth - 10;
-          this.rightWrap = true;
+          this.rightWrap += 1;
         }
       }
       // check wether to rotate piece right or left:
       // ..........
+      if (this.rightPos[0] >= this.currentHeight + this.pieceHeight) {
+        this.currentHeight += this.pieceHeight;
+        dest.style.height = `${this.currentHeight}px`;
+      }
     } else {
       piece.style.top = `${this.leftPos[0]}px`;
       piece.style.left = `${this.leftPos[1]}px`;
@@ -40,16 +47,34 @@ let GameBoard = {
         this.leftPos[1] -= this.pieceHeight;
       } else {
         if (this.leftWrap) {
-          piece.style.transform += "rotateZ(90deg)";
+          piece.style.transform = "rotateZ(0deg)";
           this.leftPos[0] += this.pieceHeight;
+          this.leftWrap += 1;
         } else {
           this.leftPos[0] += 2 * this.pieceWidth - 10;
           this.leftPos[1] -= this.pieceWidth - 10;
-          this.leftWrap = true;
+          this.leftWrap += 1;
         }
+      }
+
+      if (this.leftPos[0] >= this.currentHeight + this.pieceHeight) {
+        this.currentHeight += this.pieceHeight;
+        dest.style.height = `${this.currentHeight}px`;
       }
     }
     dest.appendChild(piece);
+  },
+  reset: function () {
+    this.left = null;
+    this.right = null;
+    this.screenWidth = window.screen.availWidth - 320;
+    this.currentHeight = window.screen.availHeight;
+    this.leftPos = [50, 370];
+    this.rightPos = [50, 538];
+    this.leftWrap = 0;
+    this.rightWrap = 0;
+    this.pieceHeight = 84;
+    this.pieceWidth = 36;
   },
 };
 function createEmptyPiece(pos, top = 0, left = 0) {
@@ -58,6 +83,7 @@ function createEmptyPiece(pos, top = 0, left = 0) {
   piece.classList.add(pos);
   piece.style.top = `${top}px`;
   piece.style.left = `${left}px`;
+  piece.style.transform = "rotateZ(90deg)";
   return piece;
 }
 function createPiece(up, down) {
@@ -136,6 +162,7 @@ function addDragPiece(ele) {
           addDrop(ele);
         });
         checkDrop = false;
+        checkWin(playerTurn);
         playerTurn == 1 ? (playerTurn = 2) : (playerTurn = 1);
         setPlayerTurn("player" + playerTurn);
       }
@@ -145,14 +172,28 @@ function addDragPiece(ele) {
 }
 function setPlayerTurn(player) {
   let allPieces = document.querySelectorAll(".piece");
+  pickPiece = 1;
   allPieces.forEach((ele) => {
     if (ele.parentNode.id === player) {
-      ele.style.cursor = "grab";
-      ele.setAttribute("draggable", "true");
-      ele.parentNode.children[0].style.color = "#00b050";
-      addDragPiece(ele);
+      if (
+        ele.id.charAt(1) == GameBoard.left ||
+        ele.id.charAt(1) == GameBoard.right ||
+        ele.id.charAt(2) == GameBoard.left ||
+        ele.id.charAt(2) == GameBoard.right ||
+        GameBoard.left == null
+      ) {
+        ele.style.cursor = "grab";
+        ele.setAttribute("draggable", "true");
+        ele.parentNode.children[0].style.color = "#00b050";
+        addDragPiece(ele);
+        pickPiece = 0;
+      }
     } else {
-      ele.style.cursor = "default";
+      if (ele.parentNode.classList.contains("rest-pieces")) {
+        ele.style.cursor = "pointer";
+      } else {
+        ele.style.cursor = "default";
+      }
       ele.removeAttribute("draggable");
       ele.parentNode.children[0].style.color = "#fff";
     }
@@ -188,17 +229,17 @@ function addDrop(ele) {
           // add rotate here
           GameBoard.right = downVal;
           checkDrop = "r";
-          if (GameBoard.rightWrap) {
-            draggedItem.style.transform = "rotateZ(180deg)";
+          if (GameBoard.rightWrap > 1) {
+            draggedItem.style.transform = "rotateZ(0deg)";
           } else {
             draggedItem.style.transform = "rotateZ(270deg)";
           }
-        } else if (GameBoard.left == downVal) {
+        } else if (GameBoard.right == downVal) {
           // add rotate here
           GameBoard.right = upVal;
           checkDrop = "r";
-          if (GameBoard.leftWrap) {
-            draggedItem.style.transform = "rotateZ(0deg)";
+          if (GameBoard.rightWrap > 1) {
+            draggedItem.style.transform = "rotateZ(180deg)";
           }
         }
       } else {
@@ -208,14 +249,14 @@ function addDrop(ele) {
           // add rotate here
           GameBoard.left = downVal;
           checkDrop = "l";
-          if (GameBoard.leftWrap) {
+          if (GameBoard.leftWrap > 1) {
             draggedItem.style.transform = "rotateZ(0deg)";
           }
         } else if (GameBoard.left == downVal) {
           // add rotate here
           GameBoard.left = upVal;
           checkDrop = "l";
-          if (GameBoard.leftWrap) {
+          if (GameBoard.leftWrap > 1) {
             draggedItem.style.transform = "rotateZ(180deg)";
           } else {
             draggedItem.style.transform = "rotateZ(270deg)";
@@ -230,9 +271,7 @@ function addDrop(ele) {
       draggedItem.style.left = ele.style.left;
       draggedItem.style.position = "absolute";
       draggedItem.style.cursor = "default";
-      if (ele) {
-        ele.remove();
-      }
+      ele.remove();
       if (checkDrop == "r") {
         GameBoard.add(createEmptyPiece("right"), currentBoard, "right");
       } else if (checkDrop == "l") {
@@ -243,13 +282,50 @@ function addDrop(ele) {
         GameBoard.right = upVal;
         GameBoard.left = downVal;
         draggedItem.style.top = "50px";
-        draggedItem.style.left = "449px";
+        draggedItem.style.left = "454px";
       }
     } else {
       event.preventDefault();
     }
   };
 }
+function checkWin(player) {
+  let playerDiv = document.getElementById("player" + player);
+  if (playerDiv.children.length <= 1) {
+    // remove all pieces:
+    let pieces = document.querySelectorAll(".piece");
+    pieces.forEach((ele) => {
+      ele.remove();
+    });
+    // switch boards:
+    let currentBoard = document.getElementsByClassName("game-board")[0];
+    currentBoard.style.display = "none";
+    currentBoard.innerHTML = `<div class="empty-piece">`;
+    currentBoard.style.height = "110vh";
+    let selectionBoard = document.getElementsByClassName("selection-board")[0];
+    selectionBoard.style.display = "flex";
+    // create game over screen:
+    let gameOver = document.createElement("div");
+    gameOver.innerHTML = `
+    <h1>Player ${player} won!</h1>
+    <button id="continue-btn">Continue playing</button>
+    <button id="exit-btn">Exit Game</button>
+    `;
+    gameOver.id = "game-over";
+    selectionBoard.appendChild(gameOver);
+    let continueBtn = document.getElementById("continue-btn");
+    let exitBtn = document.getElementById("exit-btn");
+    continueBtn.onclick = function () {
+      gameOver.remove();
+      createRandomPieces();
+      GameBoard.reset();
+      pickPiece = null;
+      gameStart = 0;
+      playerTurn = 2;
+    };
+  }
+}
+
 function startGame() {
   document.body.onclick = function (event) {
     let element = event.target;
@@ -301,6 +377,27 @@ function startGame() {
               addDrop(ele);
             });
           }
+        }
+      }
+      if (pickPiece == 1) {
+        console.log("hello");
+        let selectedPiece = element.parentElement;
+        let playerDiv = document.getElementById("player" + playerTurn);
+        selectedPiece.style.transform = "rotateY(0deg)"; // flip paper
+        setTimeout(function () {
+          selectedPiece.style.transform += " rotateZ(90deg)";
+          playerDiv.appendChild(selectedPiece);
+        }, 1000);
+        if (
+          selectedPiece.id.charAt(1) == GameBoard.left ||
+          selectedPiece.id.charAt(1) == GameBoard.right ||
+          selectedPiece.id.charAt(2) == GameBoard.left ||
+          selectedPiece.id.charAt(2) == GameBoard.right
+        ) {
+          selectedPiece.setAttribute("draggable", "true");
+          selectedPiece.style.cursor = "grab";
+          addDragPiece(selectedPiece);
+          pickPiece = 0;
         }
       }
     }
