@@ -1,82 +1,3 @@
-// global variables
-let playerTurn = 1;
-let gameStart = 0;
-let draggedItem = null;
-let checkDrop = false;
-let pickPiece = null;
-let GameBoard = {
-  left: null,
-  right: null,
-  screenWidth: window.screen.availWidth - 320,
-  currentHeight: window.screen.availHeight,
-  leftPos: [50, 370],
-  rightPos: [50, 538],
-  leftWrap: 0,
-  rightWrap: 0,
-  pieceHeight: 84,
-  pieceWidth: 36,
-  add: function (piece, dest, pos) {
-    // common state:
-    if (pos === "right") {
-      piece.style.top = `${this.rightPos[0]}px`;
-      piece.style.left = `${this.rightPos[1]}px`;
-      // update new position pf right piece:
-      if (this.rightPos[1] + 200 < this.screenWidth) {
-        this.rightPos[1] += this.pieceHeight;
-      } else {
-        if (this.rightWrap) {
-          piece.style.transform = "rotateZ(0deg)";
-          this.rightPos[0] += this.pieceHeight;
-          this.rightWrap += 1;
-        } else {
-          this.rightPos[0] += 2 * this.pieceWidth - 10;
-          this.rightPos[1] += this.pieceWidth - 10;
-          this.rightWrap += 1;
-        }
-      }
-      // check wether to rotate piece right or left:
-      // ..........
-      if (this.rightPos[0] >= this.currentHeight + this.pieceHeight) {
-        this.currentHeight += this.pieceHeight;
-        dest.style.height = `${this.currentHeight}px`;
-      }
-    } else {
-      piece.style.top = `${this.leftPos[0]}px`;
-      piece.style.left = `${this.leftPos[1]}px`;
-      if (this.leftPos[1] - 200 > 0) {
-        this.leftPos[1] -= this.pieceHeight;
-      } else {
-        if (this.leftWrap) {
-          piece.style.transform = "rotateZ(0deg)";
-          this.leftPos[0] += this.pieceHeight;
-          this.leftWrap += 1;
-        } else {
-          this.leftPos[0] += 2 * this.pieceWidth - 10;
-          this.leftPos[1] -= this.pieceWidth - 10;
-          this.leftWrap += 1;
-        }
-      }
-
-      if (this.leftPos[0] >= this.currentHeight + this.pieceHeight) {
-        this.currentHeight += this.pieceHeight;
-        dest.style.height = `${this.currentHeight}px`;
-      }
-    }
-    dest.appendChild(piece);
-  },
-  reset: function () {
-    this.left = null;
-    this.right = null;
-    this.screenWidth = window.screen.availWidth - 320;
-    this.currentHeight = window.screen.availHeight;
-    this.leftPos = [50, 370];
-    this.rightPos = [50, 538];
-    this.leftWrap = 0;
-    this.rightWrap = 0;
-    this.pieceHeight = 84;
-    this.pieceWidth = 36;
-  },
-};
 function createEmptyPiece(pos, top = 0, left = 0) {
   let piece = document.createElement("div");
   piece.classList.add("empty-piece");
@@ -112,6 +33,8 @@ function mainMenu() {
     let mainMenu = document.getElementsByClassName("main-menu")[0];
     mainMenu.style.display = "none";
     mainGame.style.display = "grid";
+    mainGame.parentNode.style.padding = "20px 0";
+    document.querySelector("header").style.display = "none";
   };
   let exitButton = document.getElementsByClassName("exit")[0];
   exitButton.onclick = () => {
@@ -145,6 +68,10 @@ function addDragPiece(ele) {
     }
   };
   ele.ondragend = function eventHandler(event) {
+    let emptyPieces = document.querySelectorAll(".empty-piece");
+    emptyPieces.forEach((ele) => {
+      ele.style.borderColor = "red";
+    });
     if (event.target.hasAttribute("draggable")) {
       draggedItem.style.opacity = "1";
       console.log("drag end");
@@ -164,7 +91,7 @@ function addDragPiece(ele) {
         checkDrop = false;
         checkWin(playerTurn);
         playerTurn == 1 ? (playerTurn = 2) : (playerTurn = 1);
-        setPlayerTurn("player" + playerTurn);
+        setPlayerTurn(playerTurn);
       }
       draggedItem = null;
     }
@@ -172,9 +99,13 @@ function addDragPiece(ele) {
 }
 function setPlayerTurn(player) {
   let allPieces = document.querySelectorAll(".piece");
+  let currentPlayer = player;
+  let otherPlayer = player == 1 ? 2 : 1;
   pickPiece = 1;
   allPieces.forEach((ele) => {
-    if (ele.parentNode.id === player) {
+    if (ele.parentNode.id === `player${currentPlayer}-pieces`) {
+      ele.style.transform = "rotateY(0deg) rotateZ(90deg)";
+      // if player has a playable piece:
       if (
         ele.id.charAt(1) == GameBoard.left ||
         ele.id.charAt(1) == GameBoard.right ||
@@ -187,7 +118,11 @@ function setPlayerTurn(player) {
         ele.parentNode.children[0].style.color = "#00b050";
         addDragPiece(ele);
         pickPiece = 0;
+        checkClosedGame = 0;
       }
+    } else if (ele.parentNode.id === `player${otherPlayer}-pieces`) {
+      ele.style.transform = "rotateY(180deg) rotateZ(90deg)";
+      ele.style.cursor = "default";
     } else {
       if (ele.parentNode.classList.contains("rest-pieces")) {
         ele.style.cursor = "pointer";
@@ -198,6 +133,7 @@ function setPlayerTurn(player) {
       ele.parentNode.children[0].style.color = "#fff";
     }
   });
+  hasSuitablePiece();
 }
 function addDragEffect(ele) {
   ele.ondragover = function eventHandler(event) {
@@ -290,123 +226,277 @@ function addDrop(ele) {
   };
 }
 function checkWin(player) {
-  let playerDiv = document.getElementById("player" + player);
-  if (playerDiv.children.length <= 1) {
-    // remove all pieces:
-    let pieces = document.querySelectorAll(".piece");
-    pieces.forEach((ele) => {
-      ele.remove();
-    });
-    // switch boards:
-    let currentBoard = document.getElementsByClassName("game-board")[0];
-    currentBoard.style.display = "none";
-    currentBoard.innerHTML = `<div class="empty-piece">`;
-    currentBoard.style.height = "110vh";
-    let selectionBoard = document.getElementsByClassName("selection-board")[0];
-    selectionBoard.style.display = "flex";
-    // create game over screen:
-    let gameOver = document.createElement("div");
-    gameOver.innerHTML = `
-    <h1>Player ${player} won!</h1>
-    <button id="continue-btn">Continue playing</button>
-    <button id="exit-btn">Exit Game</button>
-    `;
-    gameOver.id = "game-over";
-    selectionBoard.appendChild(gameOver);
-    let continueBtn = document.getElementById("continue-btn");
-    let exitBtn = document.getElementById("exit-btn");
-    continueBtn.onclick = function () {
-      gameOver.remove();
-      createRandomPieces();
-      GameBoard.reset();
-      pickPiece = null;
-      gameStart = 0;
-      playerTurn = 2;
-    };
+  let playerDiv = document.getElementById(`player${player}-pieces`);
+  if (playerDiv.children.length == 0) {
+    calcScore();
+    gameOver();
   }
 }
+function gameOver() {
+  // remove all pieces:
+  let pieces = document.querySelectorAll(".piece");
+  pieces.forEach((ele) => {
+    ele.remove();
+  });
+  // switch boards:
+  let currentBoard = document.getElementsByClassName("game-board")[0];
+  currentBoard.style.display = "none";
+  currentBoard.innerHTML = `<div class="empty-piece">`;
+  currentBoard.style.height = "100%";
+  let selectionBoard = document.getElementsByClassName("selection-board")[0];
+  selectionBoard.style.display = "flex";
+  // create game over screen:
+  let gameOver = document.createElement("div");
+  gameOver.innerHTML = `
+  <h1>Game Over!!</h1>
+  <button id="continue-btn">Continue playing</button>
+  <button id="exit-btn">Exit Game</button>
+  `;
+  gameOver.id = "game-over";
+  selectionBoard.appendChild(gameOver);
+  let continueBtn = document.getElementById("continue-btn");
+  let exitBtn = document.getElementById("exit-btn");
+  continueBtn.onclick = function () {
+    playerTurn = playerTurn == 1 ? 2 : 1;
+    gameOver.remove();
+    GameBoard.reset();
+    resetGameVariables();
+    createRandomPieces();
+  };
+}
+function hasSuitablePiece() {
+  let restPiecesNo =
+    document.getElementsByClassName("rest-pieces")[0].children.length;
 
+  if (pickPiece == 1 && restPiecesNo == 0) {
+    playerTurn == 1 ? (playerTurn = 2) : (playerTurn = 1);
+    checkClosedGame += 1;
+    if (checkClosedGame > 2) {
+      let closedGameMsg = document.createElement("p");
+      closedGameMsg.innerHTML = `Game is closed!`;
+      closedGameMsg.style.cssText = `
+      font-size:2em;
+      color:red;
+      font-weight:600;
+      `;
+      let currentBoard = document.getElementsByClassName("game-board")[0];
+      let otherPlayer = playerTurn == 1 ? 2 : 1;
+      let pieces = document.querySelectorAll(`#player${otherPlayer} .piece`);
+      pieces.forEach((ele) => {
+        ele.style.transform = `rotateY(0deg) rotateZ(90deg)`;
+      });
+      currentBoard.appendChild(closedGameMsg);
+      setTimeout(() => {
+        closedGameMsg.remove();
+        calcScore();
+        gameOver();
+      }, 5000);
+    } else {
+      let noPieceMsg = document.createElement("p");
+      noPieceMsg.innerHTML = `you don't have suitable piece`;
+      noPieceMsg.style.cssText = `
+      font-size:2em;
+      color:red;
+      font-weight:600;
+      `;
+      let currentBoard = document.getElementsByClassName("game-board")[0];
+      currentBoard.appendChild(noPieceMsg);
+      setTimeout(() => {
+        noPieceMsg.remove();
+        setPlayerTurn(playerTurn);
+      }, 2000);
+    }
+  }
+}
+function calcScore() {
+  let player1Pieces = document.querySelectorAll("#player1-pieces .piece");
+  let player2Pieces = document.querySelectorAll("#player2-pieces .piece");
+  player1Pieces.forEach((ele) => {
+    let val = ele.id;
+    score[2] += parseInt(val[1]) + parseInt(val[2]);
+  });
+  player2Pieces.forEach((ele) => {
+    let val = ele.id;
+    score[1] += parseInt(val[1]) + parseInt(val[2]);
+  });
+  let player1Score = document.querySelector("#player1 .score");
+  let player2Score = document.querySelector("#player2 .score");
+  player1Score.innerHTML = `score: ${score[1]}`;
+  player2Score.innerHTML = `score: ${score[2]}`;
+}
+function resetGameVariables() {
+  gameStart = 0;
+  draggedItem = null;
+  checkDrop = false;
+  pickPiece = null;
+  checkClosedGame = 0;
+  piecesSelected = 0;
+}
 function startGame() {
   document.body.onclick = function (event) {
     let element = event.target;
+    let clickedPiece = element.parentElement;
     if (element.classList.contains("back-face")) {
-      // move piece to player area:
+      // selection stage:
       if (gameStart === 0) {
-        let parent = element.parentElement;
-        parent.style.transform = "rotateY(0deg)"; // flip paper
-        if (playerTurn === 1) {
-          playerTurn = 2;
-          let player1 = document.getElementById("player1");
-          setTimeout(function () {
-            parent.style.transform += " rotateZ(90deg)";
-            player1.appendChild(parent);
-          }, 1000);
-        } else {
-          playerTurn = 1;
-          let player2 = document.getElementById("player2");
-          setTimeout(function () {
-            parent.style.transform += " rotateZ(90deg)";
-            player2.appendChild(parent);
-          }, 1000);
+        let currentPlayer = document.getElementById(
+          `player${playerTurn}-pieces`
+        );
+        clickedPiece.style.transform = "rotateY(0deg)"; // flip paper when player click it
+        // transition time is 1000ms so I used timeout function
+        setTimeout(() => {
+          clickedPiece.style.transform = "rotateY(180deg)"; // flip paper again when it's placed in player area
+          clickedPiece.style.transform += " rotateZ(90deg)";
+          currentPlayer.appendChild(clickedPiece);
+        }, 1000);
+        piecesSelected += 1;
+        playerTurn = playerTurn == 1 ? 2 : 1;
+        // players got their initial pieces
+        if (piecesSelected == 14) {
+          gameStart = 1;
 
-          // moving rest pieces:
-          if (player2.childElementCount >= 7) {
-            oldNodes = document.querySelector(".selection-board .piece");
-            newPlace = document.getElementsByClassName("rest-pieces")[0];
+          // wait 1s then move rest pieces to ensure that last player's piece was placed correct:
+          oldNodes = document.querySelector(".selection-board .piece");
+          newPlace = document.getElementsByClassName("rest-pieces")[0];
+          setTimeout(() => {
             while (document.querySelector(".selection-board .piece")) {
               newPlace.appendChild(
                 document.querySelector(".selection-board .piece")
               );
             }
-            gameStart = 1;
+
+            // show game board and hide selection board
             let board = document.getElementsByClassName("board")[0];
             board.children[0].style.display = "none";
-            board.children[1].style.display = "block";
-            board.children[1].style.height = "110vh";
+            board.children[1].style.display = "flex";
 
             // remove pointer cursor from all pieces and add grap cursor to first player pieces
-            setTimeout(() => {
-              setPlayerTurn("player1");
-            }, 1000);
+            setPlayerTurn(playerTurn);
 
-            // add dragover effects:
+            // add drag and drop propeties to empty piece box:
             let emptyPieces = document.querySelectorAll(".empty-piece");
             emptyPieces.forEach((ele) => {
               addDragEffect(ele);
               // drop piece:
               addDrop(ele);
             });
-          }
+          }, 1000);
         }
       }
+
+      // pick piece stage:
       if (pickPiece == 1) {
-        console.log("hello");
-        let selectedPiece = element.parentElement;
-        let playerDiv = document.getElementById("player" + playerTurn);
-        selectedPiece.style.transform = "rotateY(0deg)"; // flip paper
+        let playerDiv = document.getElementById(`player${playerTurn}-pieces`);
+        clickedPiece.style.transform = "rotateY(0deg)"; // flip paper
         setTimeout(function () {
-          selectedPiece.style.transform += " rotateZ(90deg)";
-          playerDiv.appendChild(selectedPiece);
+          clickedPiece.style.transform += " rotateZ(90deg)";
+          playerDiv.appendChild(clickedPiece);
         }, 1000);
+
+        // check whether the selected piece can be put on the board or not
+        let val = clickedPiece.id;
         if (
-          selectedPiece.id.charAt(1) == GameBoard.left ||
-          selectedPiece.id.charAt(1) == GameBoard.right ||
-          selectedPiece.id.charAt(2) == GameBoard.left ||
-          selectedPiece.id.charAt(2) == GameBoard.right
+          val[1] == GameBoard.left ||
+          val[1] == GameBoard.right ||
+          val[2] == GameBoard.left ||
+          val[2] == GameBoard.right
         ) {
-          selectedPiece.setAttribute("draggable", "true");
-          selectedPiece.style.cursor = "grab";
-          addDragPiece(selectedPiece);
+          clickedPiece.setAttribute("draggable", "true");
+          clickedPiece.style.cursor = "grab";
+          addDragPiece(clickedPiece);
           pickPiece = 0;
+        } else {
+          clickedPiece.style.cursor = "default";
+          setTimeout(() => {
+            hasSuitablePiece();
+          }, 1000);
         }
       }
     }
   };
 }
+// global variables
+let playerTurn = 1;
+let gameStart = 0;
+let draggedItem = null;
+let checkDrop = false;
+let pickPiece = null;
+let checkClosedGame = 0;
+let piecesSelected = 0;
+let score = [0, 0, 0];
+let GameBoard = {
+  left: null,
+  right: null,
+  screenWidth: window.screen.availWidth - 320,
+  currentHeight: window.screen.availHeight,
+  leftPos: [50, 370],
+  rightPos: [50, 538],
+  leftWrap: 0,
+  rightWrap: 0,
+  pieceHeight: 84,
+  pieceWidth: 36,
+  add: function (piece, dest, pos) {
+    // common state:
+    if (pos === "right") {
+      piece.style.top = `${this.rightPos[0]}px`;
+      piece.style.left = `${this.rightPos[1]}px`;
+      // update new position pf right piece:
+      if (this.rightPos[1] + 200 < this.screenWidth) {
+        this.rightPos[1] += this.pieceHeight;
+      } else {
+        if (this.rightWrap) {
+          piece.style.transform = "rotateZ(0deg)";
+          this.rightPos[0] += this.pieceHeight;
+          this.rightWrap += 1;
+        } else {
+          this.rightPos[0] += 2 * this.pieceWidth - 10;
+          this.rightPos[1] += this.pieceWidth - 10;
+          this.rightWrap += 1;
+        }
+      }
+      // check wether to rotate piece right or left:
+      // ..........
+      if (this.rightPos[0] >= this.currentHeight - this.pieceHeight) {
+        this.currentHeight += this.pieceHeight;
+        dest.style.height = `${this.currentHeight}px`;
+      }
+    } else {
+      piece.style.top = `${this.leftPos[0]}px`;
+      piece.style.left = `${this.leftPos[1]}px`;
+      if (this.leftPos[1] - 200 > 0) {
+        this.leftPos[1] -= this.pieceHeight;
+      } else {
+        if (this.leftWrap) {
+          piece.style.transform = "rotateZ(0deg)";
+          this.leftPos[0] += this.pieceHeight;
+          this.leftWrap += 1;
+        } else {
+          this.leftPos[0] += 2 * this.pieceWidth - 10;
+          this.leftPos[1] -= this.pieceWidth - 10;
+          this.leftWrap += 1;
+        }
+      }
+
+      if (this.leftPos[0] >= this.currentHeight - this.pieceHeight) {
+        this.currentHeight += this.pieceHeight;
+        dest.style.height = `${this.currentHeight}px`;
+      }
+    }
+    dest.appendChild(piece);
+  },
+  reset: function () {
+    this.left = null;
+    this.right = null;
+    this.screenWidth = window.screen.availWidth - 320;
+    this.currentHeight = window.screen.availHeight;
+    this.leftPos = [50, 370];
+    this.rightPos = [50, 538];
+    this.leftWrap = 0;
+    this.rightWrap = 0;
+    this.pieceHeight = 84;
+    this.pieceWidth = 36;
+  },
+};
 mainMenu();
 createRandomPieces();
 startGame();
-
-// game start:
-
-// on drag:

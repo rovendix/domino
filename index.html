@@ -19,16 +19,32 @@
       </div>
       <div class="main-game">
         <div class="player" id="player1">
-          <h2>Player 1</h2>
+          <div class="info">
+            <div class="avatar">
+              <img src="assets/avatar1.png" alt="" />
+            </div>
+            <p class="score">score: 0</p>
+          </div>
+          <div class="pieces" id="player1-pieces"></div>
+          <div class="temp"></div>
         </div>
         <div class="board">
           <div class="selection-board"></div>
           <div class="game-board"><div class="empty-piece"></div></div>
         </div>
         <div class="player" id="player2">
-          <h2>Player 2</h2>
+          <div class="info">
+            <div class="avatar">
+              <img src="assets/avatar2.png" alt="" />
+            </div>
+            <p class="score">score: 0</p>
+          </div>
+          <div class="pieces" id="player2-pieces"></div>
+          <div class="temp"></div>
         </div>
-        <div class="rest-pieces"></div>
+        <div class="bottom-bar">
+          <div class="rest-pieces"></div>
+        </div>
       </div>
     </div>
     <script src="scripts/game.js"></script>

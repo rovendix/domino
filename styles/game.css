@@ -12,9 +12,10 @@ header {
   justify-content: center;
   height: 100px;
   border: 2px solid #00b050;
-  & .logo {
-    color: #00b050;
-  }
+  background-color: #242c30;
+}
+header .logo {
+  color: #00b050;
 }
 button {
   width: 200px;
@@ -30,215 +31,245 @@ button:hover {
   background-color: #02a54b;
   cursor: pointer;
 }
+.player .pieces {
+  display: flex;
+  width: 120px;
+  border-radius: 35px;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  margin: 0 20px;
+  min-height: 200px;
+}
+.player .info {
+  color: white;
+  font-size: 1.2em;
+  text-align: center;
+}
+.player .avatar {
+  width: 90px;
+  height: 90px;
+  justify-self: flex-start;
+}
+.player .avatar img {
+  height: 100%;
+  width: 100%;
+}
+.main-menu {
+  background-color: #242c30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 104px);
+  gap: 30px;
+}
 .game {
-  border: 2px solid #00b050;
   min-height: calc(100vh - 100px);
-
-  /* main-menu */
-  & .main-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: calc(100vh - 104px);
-    gap: 30px;
-  }
-  /* main-game */
-  & .main-game {
-    display: none;
-    height: 100%;
-    grid-template-columns: 160px 1fr 160px;
-    grid-template-rows: 4fr 1fr;
-
-    .player {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-content: center;
-      border: 2px solid #00b050;
-      padding: 8px 0;
-      position: relative;
-      .piece {
-        margin: -20px 0;
-      }
-      & h2 {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        color: white;
-        font-size: 22px;
-      }
-    }
-    /* piece style */
-    & .piece {
-      height: 84px;
-      width: 36px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: ease;
-      transition-duration: 1s;
-      transform: perspective(80px) rotateY(180deg);
-      transform-style: preserve-3d;
-      position: relative;
-      & .front-face {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        border: 1px solid black;
-        border-radius: 6px;
-        background-color: white;
-        backface-visibility: hidden;
-        & .up,
-        & .down {
-          display: grid;
-          grid-template-columns: repeat(3, 6px);
-          justify-content: center;
-          grid-template-rows: repeat(3, 6px);
-          align-content: center;
-          height: 49%;
-          gap: 6px;
-        }
-
-        & .separator {
-          display: block;
-          width: 100%;
-          height: 2%;
-          background-color: black;
-        }
-        /* dot style */
-        & .dot {
-          display: block;
-          height: 6px;
-          width: 6px;
-          border-radius: 3px;
-          background-color: black;
-          & :nth-child(6) {
-            grid-column: 3/4;
-            grid-row: 3/4;
-          }
-        }
-        & .up.p1,
-        .down.p1 {
-          .dot {
-            grid-row: 2/3;
-            grid-column: 2/3;
-          }
-        }
-        & .up.p2,
-        .down.p2 {
-          & :nth-child(2) {
-            grid-row: 3/4;
-            grid-column: 3/4;
-          }
-        }
-        & .up.p3,
-        .down.p3 {
-          & :nth-child(2) {
-            grid-row: 2/3;
-            grid-column: 2/3;
-          }
-          & :nth-child(3) {
-            grid-row: 3/4;
-            grid-column: 3/4;
-          }
-        }
-        & .up.p4,
-        .up.p5,
-        .up.p6,
-        .down.p4,
-        .down.p5,
-        .down.p6 {
-          & :nth-child(2) {
-            grid-row: 1/2;
-            grid-column: 3/4;
-          }
-          & :nth-child(3) {
-            grid-row: 3/4;
-            grid-column: 1/2;
-          }
-          & :nth-child(4) {
-            grid-row: 3/4;
-            grid-column: 3/4;
-          }
-        }
-        & .up.p5,
-        .down.p5 {
-          & :nth-child(5) {
-            grid-row: 2/3;
-            grid-column: 2/3;
-          }
-        }
-        & .up.p6,
-        .down.p6 {
-          & :nth-child(5) {
-            grid-row: 2/3;
-            grid-column: 1/2;
-          }
-          & :nth-child(6) {
-            grid-row: 2/3;
-            grid-column: 3/4;
-          }
-        }
-      }
-      & .back-face {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        background-color: #fff;
-        border-radius: 6px;
-        /* box-shadow: 8px 5px 0px 0px #c9b9b9; */
-      }
-    }
-    /* empty piece style */
-    .empty-piece {
-      height: 84px;
-      width: 36px;
-      border-radius: 6px;
-      border: 1px solid red;
-      position: absolute;
-      left: 454px;
-      top: 50px;
-    }
-
-    /* board style */
-    .board {
-      background-color: #4c4a35;
-    }
-    .selection-board {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-content: center;
-      justify-content: center;
-      gap: 50px;
-      flex-wrap: wrap;
-      padding: 20px;
-      background-color: #4c4a35;
-    }
-    .game-board {
-      display: none;
-      background-color: #4c4a35;
-      width: 100%;
-      height: 110vh;
-      position: relative;
-    }
-    .rest-pieces {
-      grid-column: 1/4;
-      border: 2px solid #00b050;
-      padding: 10px;
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      min-height: 160px;
-      align-items: center;
-      justify-content: center;
-    }
-  }
+}
+.main-game {
+  display: none;
+  height: 100%;
+  grid-template-columns: 140px 1fr 140px;
+  grid-template-rows: 1fr 140px;
+}
+.player {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  padding: 8px 0;
+  position: relative;
+  background-color: #242c30;
+}
+.player .piece {
+  margin: -20px 0;
+}
+.player h2 {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+  font-size: 22px;
+}
+/* piece style */
+.piece {
+  height: 84px;
+  width: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: ease;
+  transition-duration: 1s;
+  transform: perspective(80px) rotateY(180deg);
+  transform-style: preserve-3d;
+  position: relative;
+}
+.piece .front-face {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  border: 1px solid black;
+  border-radius: 6px;
+  background-color: white;
+  backface-visibility: hidden;
+}
+.piece .front-face .separator {
+  display: block;
+  width: 100%;
+  height: 2%;
+  background-color: black;
+}
+.piece .back-face {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background-color: #fff;
+  border-radius: 6px;
+  /* box-shadow: 8px 5px 0px 0px #c9b9b9; */
+}
+/* dot style */
+.piece .front-face .dot {
+  display: block;
+  height: 6px;
+  width: 6px;
+  border-radius: 3px;
+  background-color: black;
+}
+.piece .front-face .dot :nth-child(6) {
+  grid-column: 3/4;
+  grid-row: 3/4;
+}
+.piece .front-face .up.p1 .dot,
+.piece .front-face .down.p1 .dot {
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+.piece .front-face .up.p2 :nth-child(2),
+.piece .front-face .down.p2 :nth-child(2) {
+  grid-row: 3/4;
+  grid-column: 3/4;
+}
+.piece .front-face .up.p3 :nth-child(2),
+.piece .front-face .down.p3 :nth-child(2) {
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+.piece .front-face .up.p3 :nth-child(3),
+.piece .front-face .down.p3 :nth-child(3) {
+  grid-row: 3/4;
+  grid-column: 3/4;
+}
+.piece .front-face .up.p4 :nth-child(2),
+.piece .front-face .up.p5 :nth-child(2),
+.piece .front-face .up.p6 :nth-child(2),
+.piece .front-face .down.p4 :nth-child(2),
+.piece .front-face .down.p5 :nth-child(2),
+.piece .front-face .down.p6 :nth-child(2) {
+  grid-row: 1/2;
+  grid-column: 3/4;
+}
+.piece .front-face .up.p4 :nth-child(3),
+.piece .front-face .up.p5 :nth-child(3),
+.piece .front-face .up.p6 :nth-child(3),
+.piece .front-face .down.p4 :nth-child(3),
+.piece .front-face .down.p5 :nth-child(3),
+.piece .front-face .down.p6 :nth-child(3) {
+  grid-row: 3/4;
+  grid-column: 1/2;
+}
+.piece .front-face .up.p4 :nth-child(4),
+.piece .front-face .up.p5 :nth-child(4),
+.piece .front-face .up.p6 :nth-child(4),
+.piece .front-face .down.p4 :nth-child(4),
+.piece .front-face .down.p5 :nth-child(4),
+.piece .front-face .down.p6 :nth-child(4) {
+  grid-row: 3/4;
+  grid-column: 3/4;
+}
+.piece .front-face .up.p5 :nth-child(5),
+.piece .front-face .down.p5 :nth-child(5) {
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+.piece .front-face .up.p6 :nth-child(5),
+.piece .front-face .down.p6 :nth-child(5) {
+  grid-row: 2/3;
+  grid-column: 1/2;
+}
+.piece .front-face .up.p6 :nth-child(6),
+.piece .front-face .down.p6 :nth-child(6) {
+  grid-row: 2/3;
+  grid-column: 3/4;
+}
+.piece .front-face .up,
+.piece .front-face .down {
+  display: grid;
+  grid-template-columns: repeat(3, 6px);
+  justify-content: center;
+  grid-template-rows: repeat(3, 6px);
+  align-content: center;
+  height: 49%;
+  gap: 6px;
 }
 
+/* empty piece style */
+.empty-piece {
+  height: 84px;
+  width: 36px;
+  border-radius: 6px;
+  border: 1px solid red;
+  position: absolute;
+  left: 454px;
+  top: 50px;
+  transform: rotateZ(90deg);
+}
+/* board style */
+.board {
+  min-height: calc(100vh - 40px);
+}
+.selection-board {
+  border-radius: 35px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  gap: 50px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background-color: #4c4a35;
+}
+.game-board {
+  border-radius: 35px;
+  display: none;
+  background-color: #4c4a35;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.bottom-bar {
+  grid-column: 1/4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.rest-pieces {
+  background-color: #242c30;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  border-radius: 35px;
+  height: 120px;
+  padding: 0 20px;
+}
 #game-over {
   display: flex;
   flex-direction: column;
