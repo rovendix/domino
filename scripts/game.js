@@ -89,9 +89,10 @@ function addDragPiece(ele) {
           addDrop(ele);
         });
         checkDrop = false;
-        checkWin(playerTurn);
-        playerTurn == 1 ? (playerTurn = 2) : (playerTurn = 1);
-        setPlayerTurn(playerTurn);
+        if (!checkWin(playerTurn)) {
+          playerTurn == 1 ? (playerTurn = 2) : (playerTurn = 1);
+          setPlayerTurn(playerTurn);
+        }
       }
       draggedItem = null;
     }
@@ -229,7 +230,9 @@ function checkWin(player) {
   let playerDiv = document.getElementById(`player${player}-pieces`);
   if (playerDiv.children.length == 0) {
     calcScore();
+    console.log("from check win");
     gameOver();
+    return true;
   }
 }
 function gameOver() {
@@ -248,7 +251,7 @@ function gameOver() {
   // create game over screen:
   let gameOver = document.createElement("div");
   gameOver.innerHTML = `
-  <h1>Game Over!!</h1>
+  <h1>Game Over!</h1>
   <button id="continue-btn">Continue playing</button>
   <button id="exit-btn">Exit Game</button>
   `;
@@ -289,6 +292,7 @@ function hasSuitablePiece() {
       setTimeout(() => {
         closedGameMsg.remove();
         calcScore();
+        console.log("from pick");
         gameOver();
       }, 5000);
     } else {
