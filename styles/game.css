@@ -31,29 +31,9 @@ button:hover {
   background-color: #02a54b;
   cursor: pointer;
 }
-.player .pieces {
-  display: flex;
-  width: 120px;
-  border-radius: 35px;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  margin: 0 20px;
-  min-height: 200px;
-}
-.player .info {
-  color: white;
-  font-size: 1.2em;
-  text-align: center;
-}
-.player .avatar {
-  width: 90px;
-  height: 90px;
-  justify-self: flex-start;
-}
-.player .avatar img {
-  height: 100%;
-  width: 100%;
+
+.game {
+  min-height: calc(100vh - 100px);
 }
 .main-menu {
   background-color: #242c30;
@@ -63,9 +43,6 @@ button:hover {
   justify-content: center;
   height: calc(100vh - 104px);
   gap: 30px;
-}
-.game {
-  min-height: calc(100vh - 100px);
 }
 .main-game {
   display: none;
@@ -95,6 +72,31 @@ button:hover {
   text-align: center;
   color: white;
   font-size: 22px;
+}
+
+.player .pieces {
+  display: flex;
+  width: 120px;
+  border-radius: 35px;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  margin: 0 20px;
+  min-height: 200px;
+}
+.player .info {
+  color: white;
+  font-size: 1.2em;
+  text-align: center;
+}
+.player .avatar {
+  width: 90px;
+  height: 90px;
+  justify-self: flex-start;
+}
+.player .avatar img {
+  height: 100%;
+  width: 100%;
 }
 /* piece style */
 .piece {

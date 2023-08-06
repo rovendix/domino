@@ -26,21 +26,6 @@ function createPiece(up, down) {
   pieceElement.children[1].children[2].classList.add(`p${down}`);
   return pieceElement;
 }
-function mainMenu() {
-  let startButton = document.getElementsByClassName("new-game")[0];
-  startButton.onclick = () => {
-    let mainGame = document.getElementsByClassName("main-game")[0];
-    let mainMenu = document.getElementsByClassName("main-menu")[0];
-    mainMenu.style.display = "none";
-    mainGame.style.display = "grid";
-    mainGame.parentNode.style.padding = "20px 0";
-    document.querySelector("header").style.display = "none";
-  };
-  let exitButton = document.getElementsByClassName("exit")[0];
-  exitButton.onclick = () => {
-    window.location.href = "";
-  };
-}
 function createRandomPieces() {
   let randomPieces = [];
   for (let i = 0; i <= 6; i++) {
@@ -59,6 +44,21 @@ function createRandomPieces() {
   randomPieces.forEach((ele) => {
     selectionBoard.appendChild(ele);
   });
+}
+function mainMenu() {
+  let startButton = document.getElementsByClassName("new-game")[0];
+  startButton.onclick = () => {
+    let mainGame = document.getElementsByClassName("main-game")[0];
+    let mainMenu = document.getElementsByClassName("main-menu")[0];
+    mainMenu.style.display = "none";
+    mainGame.style.display = "grid";
+    mainGame.parentNode.style.padding = "20px 0";
+    document.querySelector("header").style.display = "none";
+  };
+  let exitButton = document.getElementsByClassName("exit")[0];
+  exitButton.onclick = () => {
+    window.location.href = "";
+  };
 }
 function addDragPiece(ele) {
   ele.ondragstart = function eventHandler(event) {
@@ -84,9 +84,9 @@ function addDragPiece(ele) {
 
         let emptyPieces = document.querySelectorAll(".empty-piece");
         emptyPieces.forEach((ele) => {
-          addDragEffect(ele);
+          addDragBox(ele);
           // drop piece:
-          addDrop(ele);
+          addDropBox(ele);
         });
         checkDrop = false;
         if (!checkWin(playerTurn)) {
@@ -98,45 +98,7 @@ function addDragPiece(ele) {
     }
   };
 }
-function setPlayerTurn(player) {
-  let allPieces = document.querySelectorAll(".piece");
-  let currentPlayer = player;
-  let otherPlayer = player == 1 ? 2 : 1;
-  pickPiece = 1;
-  allPieces.forEach((ele) => {
-    if (ele.parentNode.id === `player${currentPlayer}-pieces`) {
-      ele.style.transform = "rotateY(0deg) rotateZ(90deg)";
-      // if player has a playable piece:
-      if (
-        ele.id.charAt(1) == GameBoard.left ||
-        ele.id.charAt(1) == GameBoard.right ||
-        ele.id.charAt(2) == GameBoard.left ||
-        ele.id.charAt(2) == GameBoard.right ||
-        GameBoard.left == null
-      ) {
-        ele.style.cursor = "grab";
-        ele.setAttribute("draggable", "true");
-        ele.parentNode.children[0].style.color = "#00b050";
-        addDragPiece(ele);
-        pickPiece = 0;
-        checkClosedGame = 0;
-      }
-    } else if (ele.parentNode.id === `player${otherPlayer}-pieces`) {
-      ele.style.transform = "rotateY(180deg) rotateZ(90deg)";
-      ele.style.cursor = "default";
-    } else {
-      if (ele.parentNode.classList.contains("rest-pieces")) {
-        ele.style.cursor = "pointer";
-      } else {
-        ele.style.cursor = "default";
-      }
-      ele.removeAttribute("draggable");
-      ele.parentNode.children[0].style.color = "#fff";
-    }
-  });
-  hasSuitablePiece();
-}
-function addDragEffect(ele) {
+function addDragBox(ele) {
   ele.ondragover = function eventHandler(event) {
     event.preventDefault();
     ele.style.borderColor = "#00b050";
@@ -145,8 +107,7 @@ function addDragEffect(ele) {
     ele.style.borderColor = "red";
   };
 }
-
-function addDrop(ele) {
+function addDropBox(ele) {
   ele.ondrop = function eventHandler(event) {
     console.log("drop");
     let currentBoard = document.getElementsByClassName("game-board")[0];
@@ -226,46 +187,43 @@ function addDrop(ele) {
     }
   };
 }
-function checkWin(player) {
-  let playerDiv = document.getElementById(`player${player}-pieces`);
-  if (playerDiv.children.length == 0) {
-    calcScore();
-    console.log("from check win");
-    gameOver();
-    return true;
-  }
-}
-function gameOver() {
-  // remove all pieces:
-  let pieces = document.querySelectorAll(".piece");
-  pieces.forEach((ele) => {
-    ele.remove();
+function setPlayerTurn(player) {
+  let allPieces = document.querySelectorAll(".piece");
+  let currentPlayer = player;
+  let otherPlayer = player == 1 ? 2 : 1;
+  pickPiece = 1;
+  allPieces.forEach((ele) => {
+    if (ele.parentNode.id === `player${currentPlayer}-pieces`) {
+      ele.style.transform = "rotateY(0deg) rotateZ(90deg)";
+      // if player has a playable piece:
+      if (
+        ele.id.charAt(1) == GameBoard.left ||
+        ele.id.charAt(1) == GameBoard.right ||
+        ele.id.charAt(2) == GameBoard.left ||
+        ele.id.charAt(2) == GameBoard.right ||
+        GameBoard.left == null
+      ) {
+        ele.style.cursor = "grab";
+        ele.setAttribute("draggable", "true");
+        ele.parentNode.children[0].style.color = "#00b050";
+        addDragPiece(ele);
+        pickPiece = 0;
+        checkClosedGame = 0;
+      }
+    } else if (ele.parentNode.id === `player${otherPlayer}-pieces`) {
+      ele.style.transform = "rotateY(180deg) rotateZ(90deg)";
+      ele.style.cursor = "default";
+    } else {
+      if (ele.parentNode.classList.contains("rest-pieces")) {
+        ele.style.cursor = "pointer";
+      } else {
+        ele.style.cursor = "default";
+      }
+      ele.removeAttribute("draggable");
+      ele.parentNode.children[0].style.color = "#fff";
+    }
   });
-  // switch boards:
-  let currentBoard = document.getElementsByClassName("game-board")[0];
-  currentBoard.style.display = "none";
-  currentBoard.innerHTML = `<div class="empty-piece">`;
-  currentBoard.style.height = "100%";
-  let selectionBoard = document.getElementsByClassName("selection-board")[0];
-  selectionBoard.style.display = "flex";
-  // create game over screen:
-  let gameOver = document.createElement("div");
-  gameOver.innerHTML = `
-  <h1>Game Over!</h1>
-  <button id="continue-btn">Continue playing</button>
-  <button id="exit-btn">Exit Game</button>
-  `;
-  gameOver.id = "game-over";
-  selectionBoard.appendChild(gameOver);
-  let continueBtn = document.getElementById("continue-btn");
-  let exitBtn = document.getElementById("exit-btn");
-  continueBtn.onclick = function () {
-    playerTurn = playerTurn == 1 ? 2 : 1;
-    gameOver.remove();
-    GameBoard.reset();
-    resetGameVariables();
-    createRandomPieces();
-  };
+  hasSuitablePiece();
 }
 function hasSuitablePiece() {
   let restPiecesNo =
@@ -312,6 +270,15 @@ function hasSuitablePiece() {
     }
   }
 }
+function checkWin(player) {
+  let playerDiv = document.getElementById(`player${player}-pieces`);
+  if (playerDiv.children.length == 0) {
+    calcScore();
+    console.log("from check win");
+    gameOver();
+    return true;
+  }
+}
 function calcScore() {
   let player1Pieces = document.querySelectorAll("#player1-pieces .piece");
   let player2Pieces = document.querySelectorAll("#player2-pieces .piece");
@@ -327,6 +294,38 @@ function calcScore() {
   let player2Score = document.querySelector("#player2 .score");
   player1Score.innerHTML = `score: ${score[1]}`;
   player2Score.innerHTML = `score: ${score[2]}`;
+}
+function gameOver() {
+  // remove all pieces:
+  let pieces = document.querySelectorAll(".piece");
+  pieces.forEach((ele) => {
+    ele.remove();
+  });
+  // switch boards:
+  let currentBoard = document.getElementsByClassName("game-board")[0];
+  currentBoard.style.display = "none";
+  currentBoard.innerHTML = `<div class="empty-piece">`;
+  currentBoard.style.height = "100%";
+  let selectionBoard = document.getElementsByClassName("selection-board")[0];
+  selectionBoard.style.display = "flex";
+  // create game over screen:
+  let gameOver = document.createElement("div");
+  gameOver.innerHTML = `
+  <h1>Game Over!</h1>
+  <button id="continue-btn">Continue playing</button>
+  <button id="exit-btn">Exit Game</button>
+  `;
+  gameOver.id = "game-over";
+  selectionBoard.appendChild(gameOver);
+  let continueBtn = document.getElementById("continue-btn");
+  let exitBtn = document.getElementById("exit-btn");
+  continueBtn.onclick = function () {
+    playerTurn = playerTurn == 1 ? 2 : 1;
+    gameOver.remove();
+    GameBoard.reset();
+    resetGameVariables();
+    createRandomPieces();
+  };
 }
 function resetGameVariables() {
   gameStart = 0;
@@ -380,9 +379,9 @@ function startGame() {
             // add drag and drop propeties to empty piece box:
             let emptyPieces = document.querySelectorAll(".empty-piece");
             emptyPieces.forEach((ele) => {
-              addDragEffect(ele);
+              addDragBox(ele);
               // drop piece:
-              addDrop(ele);
+              addDropBox(ele);
             });
           }, 1000);
         }
